@@ -78,8 +78,6 @@ python app.py
 
 # Access at http://localhost:5000
 
-# Public URL will appear in console (via ngrok)
-
 ```
 ## 🔍 Project Components
 ### Part 1: Audio Signal Analysis
@@ -113,8 +111,6 @@ python app.py
    - Compare before/after results
 
 ## 🌐 Web Application Features
-
-**before analysis:**
 
 ![Web App Interface Before](https://github.com/a0mfares/DSP2025/blob/main/Screenshots/webappdemob.png)
 
@@ -162,14 +158,19 @@ An interactive web interface offers:
 - **Display Performance metrics** 
 ## 📊 Example Results
 1. **Time Domain Comparison**
+   
    ![Signals Comparison](https://github.com/a0mfares/DSP2025/blob/main/Screenshots/timeComparison.png)
+   
 2. **Frequency Analysis**
+   
    ![Spectrum Analysis](https://github.com/a0mfares/DSP2025/blob/main/Screenshots/freqComparison.png)
+   
 3. **Filter Response**
-   ![Filter Characteristics](https://github.com/a0mfares/DSP2025/blob/main/Screenshots/filterResponse.png))
+
+   ![Filter Characteristics](https://github.com/a0mfares/DSP2025/blob/main/Screenshots/filterResponse.png)
 - Segments of 3 seconds are used for all audio processing to ensure that the results are comparable
 - The parameters that come by default are set to the configuration of voice-frequency ranges ideal
 - Ngrok gives you access to public URLs only for short periods of time - for stable hosting there is a wide range of solutions to choose from:
-  - AWS Elastic Beanstalk ( Tried but face computation delays and some timeouts due to lack of resources ) 
+  - AWS Elastic Beanstalk ( Tried but faced computation delays and some timeouts due to lack of resources ) 
   - Heroku 
-  - PythonAnywhere ( couldn't even install dependencies because lack of storage )
+  - PythonAnywhere ( couldn't even install dependencies because of lack of storage )
