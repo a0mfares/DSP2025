@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Signal Processing App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .card {
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .plot-img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #007bff;
+        }
+        .audio-controls {
+            width: 100%;
+            margin: 10px 0;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+        .parameter-group {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center my-4">Audio Signal Processing Tool</h1>
+        
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        <div class="row">
+            <!-- Form for parameter input -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title mb-0">Input Parameters</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data">
+                            <!-- Audio File Upload -->
+                            <div class="mb-3">
+                                <label for="audio_file" class="form-label">Audio File</label>
+                                <input type="file" class="form-control" id="audio_file" name="audio_file" accept="audio/*" required>
+                            </div>
+                            
+                            <!-- Audio Parameters -->
+                            <div class="parameter-group">
+                                <h5>Audio Parameters</h5>
+                                <div class="mb-3">
+                                    <label for="sr" class="form-label">Sampling Rate (Hz)</label>
+                                    <input type="number" class="form-control" id="sr" name="sr" value="44100" min="8000" max="192000">
+                                </div>
+                            </div>
+                            
+                            <!-- Interference Parameters -->
+                            <div class="parameter-group">
+                                <h5>Interference Parameters</h5>
+                                <div class="mb-3">
+                                    <label for="interference_f" class="form-label">Interference Frequency (Hz)</label>
+                                    <input type="number" class="form-control" id="interference_f" name="interference_f" value="15200" min="1" max="22050">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="interference_amplitude" class="form-label">Interference Amplitude</label>
+                                    <input type="number" class="form-control" id="interference_amplitude" name="interference_amplitude" value="1.8" min="0.1" max="10" step="0.1">
+                                </div>
+                            </div>
+                            
+                            <!-- FFT Parameters -->
+                            <div class="parameter-group">
+                                <h5>Spectral Analysis Parameters</h5>
+                                <div class="mb-3">
+                                    <label for="fft_size" class="form-label">FFT Size</label>
+                                    <select class="form-select" id="fft_size" name="fft_size">
+                                        <option value="1024">1024</option>
+                                        <option value="2048" selected>2048</option>
+                                        <option value="4096">4096</option>
+                                        <option value="8192">8192</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="window_size" class="form-label">Window Size</label>
+                                    <select class="form-select" id="window_size" name="window_size">
+                                        <option value="1024">1024</option>
+                                        <option value="2048" selected>2048</option>
+                                        <option value="4096">4096</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="window_type" class="form-label">Window Type</label>
+                                    <select class="form-select" id="window_type" name="window_type">
+                                        <option value="hann" selected>Hann</option>
+                                        <option value="hamming">Hamming</option>
+                                        <option value="blackman">Blackman</option>
+                                        <option value="rectangular">Rectangular</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="overlap_percent" class="form-label">Overlap Percentage</label>
+                                    <input type="number" class="form-control" id="overlap_percent" name="overlap_percent" value="50" min="0" max="99">
+                                </div>
+                            </div>
+                            
+                            <!-- Filter Parameters -->
+                            <div class="parameter-group">
+                                <h5>Filter Parameters</h5>
+                                <div class="mb-3">
+                                    <label for="filter_type" class="form-label">Filter Type</label>
+                                    <select class="form-select" id="filter_type" name="filter_type">
+                                        <option value="butter" selected>Butterworth</option>
+                                        <option value="cheby1">Chebyshev Type I</option>
+                                        <option value="cheby2">Chebyshev Type II</option>
+                                        <option value="ellip">Elliptic</option>
+                                        <option value="fir">FIR</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="order" class="form-label">Filter Order</label>
+                                    <input type="number" class="form-control" id="order" name="order" value="8" min="1" max="50">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="cutoff" class="form-label">Cutoff Frequency (Hz)</label>
+                                    <input type="number" class="form-control" id="cutoff" name="cutoff" value="5000" min="1">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="ripple" class="form-label">Passband Ripple (dB)</label>
+                                    <input type="number" class="form-control" id="ripple" name="ripple" value="1" min="0.1" max="10" step="0.1">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="attenuation" class="form-label">Stopband Attenuation (dB)</label>
+                                    <input type="number" class="form-control" id="attenuation" name="attenuation" value="40" min="20" max="120">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">Process Audio</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Results display -->
+            <div class="col-lg-8">
+                {% if results %}
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h3 class="card-title mb-0">Processing Results</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Audio Playback Section -->
+                        <h4 class="section-title">Audio Playback</h4>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h5>Original Audio</h5>
+                                <audio controls class="audio-controls">
+                                    <source src="data:audio/wav;base64,{{ results.orig_audio }}" type="audio/wav">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>With Interference</h5>
+                                <audio controls class="audio-controls">
+                                    <source src="data:audio/wav;base64,{{ results.noisy_audio }}" type="audio/wav">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>Filtered Audio</h5>
+                                <audio controls class="audio-controls">
+                                    <source src="data:audio/wav;base64,{{ results.filtered_audio }}" type="audio/wav">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                        </div>
+                        
+                        <!-- Signal Plots -->
+                        <h4 class="section-title">Signal Visualization</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <img src="data:image/png;base64,{{ results.orig_segment_plot }}" alt="Original Audio Segment" class="plot-img">
+                                <p class="text-center">Original Audio Segment</p>
+                            </div>
+                            <div class="col-md-6">
+                                <img src="data:image/png;base64,{{ results.interference_plot }}" alt="Interference Signal" class="plot-img">
+                                <p class="text-center">Interference Signal ({{ results.interference_f }} Hz)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <img src="data:image/png;base64,{{ results.comparison_plot }}" alt="Original vs Interfered" class="plot-img">
+                                <p class="text-center">Original vs Interfered Audio</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Spectral Analysis -->
+                        <h4 class="section-title">Spectral Analysis</h4>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <img src="data:image/png;base64,{{ results.welch_plot }}" alt="Welch Power Spectrum" class="plot-img">
+                                <p class="text-center">
+                                    Power Spectrum (Welch Method) - 
+                                    Detected Interference: {{ "%.2f"|format(results.detected_interference) }} Hz
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Filter Design -->
+                        <h4 class="section-title">Filter Design</h4>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <img src="data:image/png;base64,{{ results.filter_plot }}" alt="Filter Response" class="plot-img">
+                                <p class="text-center">
+                                    {{ results.filter_type|capitalize }} Filter Response (Order {{ results.filter_order }})
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Filtered Results -->
+                        <h4 class="section-title">Filtering Results</h4>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <img src="data:image/png;base64,{{ results.filtered_comparison_plot }}" alt="Filtering Results" class="plot-img">
+                                <p class="text-center">Original, Interfered, and Filtered Audio Comparison</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Filter Metrics -->
+                        <h4 class="section-title">Filter Metrics</h4>
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+                                    <th>Filter Type</th>
+                                    <td>{{ results.filter_metrics.type|capitalize }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Filter Order</th>
+                                    <td>{{ results.filter_metrics.order }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Average Group Delay</th>
+                                    <td>{{ "%.2f"|format(results.filter_metrics.avg_delay_ms) }} ms</td>
+                                </tr>
+                                <tr>
+                                    <th>Passband Deviation</th>
+                                    <td>{{ "%.2f"|format(results.filter_metrics.passband_deviation) }} dB</td>
+                                </tr>
+                                <tr>
+                                    <th>Stopband Rejection</th>
+                                    <td>{{ "%.2f"|format(results.filter_metrics.stopband_rejection) }} dB</td>
+                                </tr>
+                                <tr>
+                                    <th>Number of Coefficients</th>
+                                    <td>{{ results.filter_metrics.num_coefficients }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% else %}
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Instructions</h3>
+                        <p>Upload an audio file and set the processing parameters to analyze and filter the audio.</p>
+                        <h4>Parameter Guide:</h4>
+                        <ul>
+                            <li><strong>Audio File:</strong> Upload any audio file (MP3, WAV, etc.)</li>
+                            <li><strong>Sampling Rate:</strong> Sample rate for audio processing (Hz)</li>
+                            <li><strong>Interference Frequency:</strong> Frequency of the sine wave interference (Hz)</li>
+                            <li><strong>Interference Amplitude:</strong> Amplitude of the interference signal</li>
+                            <li><strong>FFT Size:</strong> Size of the Fast Fourier Transform for spectral analysis</li>
+                            <li><strong>Window Size:</strong> Size of the window function for Welch's method</li>
+                            <li><strong>Window Type:</strong> Type of window function (Hann, Hamming, etc.)</li>
+                            <li><strong>Overlap Percentage:</strong> Percentage of overlap between windows</li>
+                            <li><strong>Filter Type:</strong> Type of filter to remove interference</li>
+                            <li><strong>Filter Order:</strong> Order of the filter (higher = steeper cutoff)</li>
+                            <li><strong>Cutoff Frequency:</strong> Frequency at which the filter begins attenuating (Hz)</li>
+                            <li><strong>Passband Ripple:</strong> Allowed ripple in the passband (dB) - for Chebyshev I and Elliptic</li>
+                            <li><strong>Stopband Attenuation:</strong> Required attenuation in stopband (dB) - for Chebyshev II and Elliptic</li>
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
