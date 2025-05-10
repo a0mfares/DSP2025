@@ -3,10 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import librosa
 import scipy.signal as signal
-import pandas as pd
 import io
 import base64
-from flask import Flask, render_template, request, send_file
+from pyngrok import ngrok
+from flask import Flask, render_template, request
 import matplotlib
 matplotlib.use('Agg')
 
@@ -212,7 +212,7 @@ def process_audio(file_path, sr, interference_f, interference_amplitude,
         'orig_segment_plot': orig_segment_plot,
         'interference_plot': interference_plot,
         'comparison_plot': comparison_plot,
-        'welch_plot': freqs,  # This will be replaced with the actual plot
+        'welch_plot': freqs,  
         'filter_plot': filter_plot,
         'filtered_comparison_plot': filtered_comparison_plot,
         'orig_audio': orig_audio_b64,
@@ -365,4 +365,8 @@ def design_filter(filter_type, fs, order, cutoff, ripple, attenuation, interfere
     return metrics, filter_plot
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    ngrok.kill()
+    ngrok.set_auth_token("1kOViJVTC4zhUDZ7VxOsMcaOzmr_38z35AR5u829rJpbQpHX2")
+    public_url = ngrok.connect(addr=5000, domain="kit-trusted-silkworm.ngrok-free.app")
+    print(" * ngrok tunnel URL:", public_url)
+    app.run(debug=False, use_reloader=False)
