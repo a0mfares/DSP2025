@@ -5,14 +5,13 @@ import librosa
 import scipy.signal as signal
 import io
 import base64
-from pyngrok import ngrok
 from flask import Flask, render_template, request
 import matplotlib
 matplotlib.use('Agg')
 
 app = Flask(__name__)
 
-# Configure upload folder
+# Configure upload folder 
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -55,6 +54,10 @@ def index():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], audio_file.filename)
             audio_file.save(file_path)
             
+            # Print for debugging
+            print(f"File saved to: {file_path}")
+            print(f"File exists: {os.path.exists(file_path)}")
+            
             # Process the audio file and generate results
             results = process_audio(file_path, sr, interference_f, interference_amplitude, 
                                    fft_size, window_size, window_type, overlap_percent,
@@ -63,7 +66,10 @@ def index():
             return render_template('index.html', results=results)
             
         except Exception as e:
-            return render_template('index.html', error=f"Error processing audio: {str(e)}")
+            import traceback
+            error_msg = f"Error processing audio: {str(e)}\n{traceback.format_exc()}"
+            print(error_msg)
+            return render_template('index.html', error=error_msg)
     
     return render_template('index.html')
 
@@ -90,6 +96,11 @@ def audio_to_base64(audio_data, sr):
 def process_audio(file_path, sr, interference_f, interference_amplitude, 
                  fft_size, window_size, window_type, overlap_percent,
                  filter_type, order, cutoff, ripple, attenuation):
+    # Verify file exists before proceeding
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"Audio file not found at: {file_path}")
+    
+    print(f"Loading audio file: {file_path}")
     # Load audio file with specified sampling rate
     data, fs = librosa.load(file_path, sr=sr)
     
@@ -126,12 +137,12 @@ def process_audio(file_path, sr, interference_f, interference_amplitude,
     
     # Plot interference
     plt.figure()
-    plt.plot(time * 1000, interference)
+    plt.plot(time, interference)
     plt.title("Interference Signal")
     plt.xlabel("Time (seconds)")
     plt.ylabel("Amplitude")
     plt.grid(True)
-    plt.xlim(0, 3)
+    plt.xlim(0, min(3, time[-1]))
     plt.ylim(-2, 2)
     interference_plot = plot_to_base64(plt)
     
@@ -157,7 +168,7 @@ def process_audio(file_path, sr, interference_f, interference_amplitude,
     comparison_plot = plot_to_base64(plt)
     
     # Plot Welch spectrum
-    freqs, psd, detected_interference = plot_welch_spectrum(
+    welch_plot, psd, detected_interference = plot_welch_spectrum(
         new_segment, fs, fft_size, window_size, window_type, overlap_percent)
     
     # Design and evaluate filters
@@ -212,7 +223,7 @@ def process_audio(file_path, sr, interference_f, interference_amplitude,
         'orig_segment_plot': orig_segment_plot,
         'interference_plot': interference_plot,
         'comparison_plot': comparison_plot,
-        'welch_plot': freqs,  
+        'welch_plot': welch_plot,  
         'filter_plot': filter_plot,
         'filtered_comparison_plot': filtered_comparison_plot,
         'orig_audio': orig_audio_b64,
@@ -364,9 +375,7 @@ def design_filter(filter_type, fs, order, cutoff, ripple, attenuation, interfere
 
     return metrics, filter_plot
 
+
 if __name__ == '__main__':
-    ngrok.kill()
-    ngrok.set_auth_token("1kOViJVTC4zhUDZ7VxOsMcaOzmr_38z35AR5u829rJpbQpHX2")
-    public_url = ngrok.connect(addr=5000, domain="kit-trusted-silkworm.ngrok-free.app")
-    print(" * ngrok tunnel URL:", public_url)
-    app.run(debug=False, use_reloader=False)
+   
+    app.run(debug=True)
