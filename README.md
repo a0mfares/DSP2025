@@ -113,8 +113,10 @@ python app.py
    - Compare before/after results
 
 ## 🌐 Web Application Features
-![Web App Interface](https://via.placeholder.com/800x400?text=Web+App+Screenshot)
-
+**before analysis:**
+![Web App Interface Before](https://github.com/a0mfares/DSP2025/blob/main/Screenshots/webappdemob.png))
+**before analysis:**
+![Web App Interface After](https://github.com/a0mfares/DSP2025/blob/main/Screenshots/webappdemoa.png))
 The interactive web interface provides:
 - **Drag-and-drop** audio upload
 - **Real-time parameter** adjustment:
