@@ -56,7 +56,7 @@ pip install -r requirements.txt
 ---
 ## Testing
 
-<iframe src="https://drive.google.com/file/d/1_MnXbUYTD1__S9Ltup_PumtJ3dsCvfml/preview" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+[Watch the video here](https://drive.google.com/file/d/1_MnXbUYTD1__S9Ltup_PumtJ3dsCvfml/view?usp=sharing)
 
 ---
 ## 📌 Notes
